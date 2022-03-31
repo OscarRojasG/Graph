@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <math.h>
 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
@@ -77,7 +78,7 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
  
     while(!glfwWindowShouldClose(window))
     {
@@ -87,6 +88,14 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
+
+        float timeValue = glfwGetTime();
+        float redValue = sin(timeValue) / 2.0f + 0.5f;
+        float greenValue = cos(timeValue) / 2.0f + 0.5f;
+        float blueValue = sin(timeValue*-1) / 2.0f + 0.5f;
+        int vertexColorLocation = glGetUniformLocation(shaderProgram, "vertexColor");
+        glUniform4f(vertexColorLocation, redValue, greenValue, blueValue, 1.0f);
+
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
@@ -170,9 +179,10 @@ unsigned int createFragmentShader()
     const char *fragmentShaderSource =
         "#version 330 core\n"
         "out vec4 FragColor;\n"
+        "uniform vec4 vertexColor;\n"
         "void main()\n"
         "{\n"
-        "   FragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n"
+        "   FragColor = vertexColor;\n"
         "}\0";
 
     unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
