@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
 
@@ -20,6 +21,7 @@ unsigned int createFragmentShader();
 unsigned int createShaderProgram();
 void checkShaderCompileErrors(unsigned int shader);
 void checkShaderProgramErrors(unsigned int program);
+const char *readFile(char *filename);
 
 int main()
 {
@@ -154,17 +156,7 @@ unsigned int createShaderProgram()
 
 unsigned int createVertexShader()
 {
-    const char *vertexShaderSource =
-        "#version 330 core\n"
-        "layout (location = 0) in vec3 aPos;\n"
-        "layout (location = 1) in vec3 aColor;\n"
-        "out vec3 vertexColor;\n"
-        "void main()\n"
-        "{\n"
-        "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-        "   vertexColor = aColor;\n"
-        "}\0";
-
+    const char *vertexShaderSource = readFile("shader.vs");
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
@@ -175,15 +167,7 @@ unsigned int createVertexShader()
 
 unsigned int createFragmentShader()
 {
-    const char *fragmentShaderSource =
-        "#version 330 core\n"
-        "out vec4 fragmentColor;\n"
-        "in vec3 vertexColor;\n"
-        "void main()\n"
-        "{\n"
-        "   fragmentColor = vec4(vertexColor, 1.0);\n"
-        "}\0";
-
+    const char *fragmentShaderSource = readFile("shader.fs");
     unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
@@ -216,4 +200,21 @@ void checkShaderProgramErrors(unsigned int program)
         glGetProgramInfoLog(program, 512, NULL, infoLog);
         printf("Error al enlazar los shaders: %s", infoLog);
     }
+}
+
+const char *readFile(char *filename)
+{
+    FILE *file = fopen(filename, "r");
+    if(!file)
+    {
+        printf("Error al abrir el archivo");
+        return NULL;
+    }
+
+    char *buffer = (char *) malloc(1001 * sizeof(char));
+	int size = fread(buffer, sizeof(char), 1000, file);
+    buffer[size] = '\0';
+    fclose(file);
+
+    return buffer;
 }
