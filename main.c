@@ -12,6 +12,7 @@ void processInput(GLFWwindow *window);
 void drawTriangle(GLFWwindow *window);
 
 unsigned int createVertexBufferObject();
+unsigned int createElementBufferObject();
 unsigned int createVertexArrayObject();
 unsigned int createVertexShader();
 unsigned int createFragmentShader();
@@ -45,13 +46,20 @@ int main()
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // Inicialización de objetos
+
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
+        0.5f,  0.5f, 0.0f,
         0.5f, -0.5f, 0.0f,
-        0.0f,  0.5f, 0.0f,
+        -0.5f, -0.5f, 0.0f,
+        -0.5f,  0.5f, 0.0f
+    }; 
+    unsigned int indices[] = {
+        0, 1, 3, // Primer triángulo
+        1, 2, 3  // Segundo triángulo
     }; 
 
     unsigned int VBO = createVertexBufferObject();
+    unsigned int EBO = createElementBufferObject();
     unsigned int VAO = createVertexArrayObject();
     unsigned int shaderProgram = createShaderProgram();
 
@@ -60,22 +68,28 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0); 
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
  
     while(!glfwWindowShouldClose(window))
     {
         processInput(window);
 
-        glClearColor(0.0f, 0.3f, 0.6f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();    
@@ -101,6 +115,13 @@ unsigned int createVertexBufferObject()
     unsigned int VBO;
     glGenBuffers(1, &VBO);
     return VBO;
+}
+
+unsigned int createElementBufferObject()
+{
+    unsigned int EBO;
+    glGenBuffers(1, &EBO);
+    return EBO;
 }
 
 unsigned int createVertexArrayObject()
@@ -151,7 +172,7 @@ unsigned int createFragmentShader()
         "out vec4 FragColor;\n"
         "void main()\n"
         "{\n"
-        "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+        "   FragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n"
         "}\0";
 
     unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
